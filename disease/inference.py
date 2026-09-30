@@ -13,6 +13,10 @@ the app keeps working while you finish training.
 import os
 import json
 
+os.environ["TF_NUM_INTRAOP_THREADS"] = "1"
+os.environ["TF_NUM_INTEROP_THREADS"] = "1"
+os.environ["OMP_NUM_THREADS"] = "1"
+
 from .treatment_lookup import get_treatment
 
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "agriwis_disease_model.keras")
