@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriWis — Regenerative Advisory Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EAD4;
+    --ink:#23301C;
+    --ink-soft:#4A5640;
+    --gold:#B0842A;
+    --sage:#5C6E4E;
+    --teal:#2C5560;
+    --line:rgba(35,48,28,0.14);
+    --card:#FBF8EE;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Work Sans', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    margin:0;
+    color:var(--ink);
+  }
+  a{color:inherit;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px;}
+  @media (max-width:640px){.wrap{padding:0 20px;}}
+
+  /* NAV */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 0;
+  }
+  .brand{font-family:'Fraunces',serif;font-size:22px;font-weight:600;letter-spacing:0.2px;}
+  .brand span{color:var(--gold);}
+  nav .links{display:flex;gap:32px;font-size:15px;color:var(--ink-soft);}
+  nav .links a{text-decoration:none;}
+  nav .links a:hover{color:var(--ink);}
+  @media (max-width:640px){nav .links{display:none;}}
+
+  /* HERO */
+  .hero{
+  position:relative;
+  display:grid;
+  grid-template-columns:1.05fr 0.95fr;
+  gap:56px;
+  padding:90px 32px 110px;
+  align-items:center;
+
+  background:
+  linear-gradient(
+    90deg,
+    rgba(241,234,212,0.45) 0%,
+    rgba(241,234,212,0.25) 55%,
+    rgba(241,234,212,0.15) 100%
+  ),
+  url("static/images/agriwis-mountains.png");
+
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+
+  min-height:620px;
+  overflow:hidden;
+}
+  @media (max-width:900px){.hero{grid-template-columns:1fr;padding:32px 0 56px;}}
+
+  .hero h1{
+    font-size:clamp(38px,5vw,58px);
+    line-height:1.08;
+    letter-spacing:-0.5px;
+    max-width:11ch;
+  }
+  .hero p.lede{
+    margin-top:22px;
+    font-size:18px;
+    color:var(--ink-soft);
+    max-width:46ch;
+  }
+  .cta-row{display:flex;gap:16px;margin-top:34px;flex-wrap:wrap;}
+  .btn{
+    padding:13px 26px;
+    border-radius:3px;
+    font-size:15px;
+    font-weight:600;
+    text-decoration:none;
+    display:inline-block;
+    border:1.5px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-primary:hover{background:var(--sage);}
+  .btn-ghost{border-color:var(--ink);color:var(--ink);background:transparent;}
+  .btn-ghost:hover{background:rgba(35,48,28,0.06);}
+
+  /* HERO CARD - the "field readout" moment */
+  .field-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:26px;
+    position:relative;
+    box-shadow:0 1px 0 var(--line);
+  }
+  .field-card .top{
+    display:flex;justify-content:space-between;align-items:flex-start;
+    border-bottom:1px solid var(--line);
+    padding-bottom:16px;margin-bottom:16px;
+  }
+  .field-card .plot{font-size:13px;color:var(--ink-soft);}
+  .field-card .plot strong{display:block;font-size:16px;color:var(--ink);font-family:'Fraunces',serif;font-weight:500;margin-top:2px;}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:var(--sage);display:inline-block;margin-right:6px;}
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+  .readout{border:1px solid var(--line);border-radius:4px;padding:12px 14px;}
+  .readout .label{font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .readout .value{font-size:20px;font-family:'Fraunces',serif;font-weight:500;}
+  .readout .value.warn{color:var(--gold);}
+  .readout .value.ok{color:var(--sage);}
+  .advisory-box{
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:4px;
+    padding:16px 18px;
+  }
+  .advisory-box .label{font-size:12px;color:#C9CFC0;margin-bottom:6px;}
+  .advisory-box .text{font-size:15px;line-height:1.5;}
+
+  /* SECTION HEADER */
+  .section{padding:76px 0;border-top:1px solid var(--line);}
+  .section-head{max-width:52ch;margin-bottom:44px;}
+  .section-head h2{font-size:clamp(28px,3.4vw,36px);letter-spacing:-0.3px;}
+  .section-head p{color:var(--ink-soft);margin-top:14px;font-size:16.5px;}
+
+  /* PIPELINE (real sequence -> numbered) */
+  .pipeline{display:flex;flex-direction:column;}
+  .step{
+    display:grid;grid-template-columns:64px 1fr;
+    gap:24px;
+    padding:26px 0;
+    border-top:1px solid var(--line);
+  }
+  .step:first-child{border-top:none;}
+  .step .num{font-family:'Fraunces',serif;font-size:26px;color:var(--gold);font-weight:500;}
+  .step h3{font-size:19px;margin-bottom:8px;}
+  .step p{color:var(--ink-soft);font-size:15.5px;max-width:56ch;}
+
+  /* TWO AUDIENCES */
+  .audiences{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  @media (max-width:760px){.audiences{grid-template-columns:1fr;}}
+  .audience{
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:30px;
+    background:var(--card);
+  }
+  .audience .tag{font-size:13px;color:var(--teal);font-weight:600;margin-bottom:10px;}
+  .audience h3{font-size:22px;margin-bottom:12px;}
+  .audience p{color:var(--ink-soft);font-size:15.5px;}
+  .audience ul{margin:16px 0 0;padding-left:18px;color:var(--ink-soft);font-size:15px;}
+  .audience li{margin-bottom:6px;}
+
+  /* WHY DIFFERENT */
+  .compare{
+    display:grid;grid-template-columns:1fr 1fr;gap:0;
+    border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  }
+  @media (max-width:760px){.compare{grid-template-columns:1fr;}}
+  .compare > div{padding:30px;}
+  .compare .them{background:var(--card);border-right:1px solid var(--line);}
+  @media (max-width:760px){.compare .them{border-right:none;border-bottom:1px solid var(--line);}}
+  .compare .us{background:var(--ink);color:var(--paper);}
+  .compare h4{font-family:'Fraunces',serif;font-weight:500;font-size:17px;margin-bottom:14px;}
+  .compare .them h4{color:var(--ink-soft);}
+  .compare .us h4{color:#C9CFC0;}
+  .compare p{font-size:15px;margin:0 0 10px;}
+  .compare .them p{color:var(--ink-soft);}
+
+  /* FOOTER CTA */
+  .closing{
+    text-align:left;
+    padding:80px 0 60px;
+  }
+  .closing h2{font-size:clamp(30px,4vw,42px);max-width:16ch;letter-spacing:-0.4px;}
+  .closing p{color:var(--ink-soft);margin-top:16px;max-width:48ch;font-size:16.5px;}
+  footer{border-top:1px solid var(--line);padding:28px 0;font-size:13.5px;color:var(--ink-soft);display:flex;justify-content:space-between;}
+  @media (max-width:600px){footer{flex-direction:column;gap:8px;}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Agri<span>Wis</span></div>
+    <div class="links">
+      <a href="/dashboard">Farmer dashboard</a>
+      <a href="/policy">Policy view</a>
+      <a href="/docs">API docs</a>
+    </div>
+  </nav>
+  </div>
+
+  <section class="hero">
+    <div>
+      <h1>Soil, sky, and weather — read as one advisory.</h1>
+      <p class="lede">AgriWis turns satellite imagery, soil health records, and forecast data into localised, regenerative recommendations — for a single field, or a whole district.</p>
+      <div class="cta-row">
+        <a href="/dashboard" class="btn btn-primary">Try the farmer dashboard</a>
+        <a href="/policy" class="btn btn-ghost">View policy dashboard</a>
+      </div>
+    </div>
+
+    <div class="field-card">
+      <div class="top">
+        <div class="plot">
+          <span><span class="status-dot"></span>Plot monitored</span>
+          <strong>Sehore District, Field 14B</strong>
+        </div>
+        <div class="plot" style="text-align:right;">Updated<br><strong style="font-size:14px;">2 hrs ago</strong></div>
+      </div>
+      <div class="readouts">
+        <div class="readout">
+          <div class="label">Soil moisture</div>
+          <div class="value warn">Low</div>
+        </div>
+        <div class="readout">
+          <div class="label">Crop health (NDVI)</div>
+          <div class="value ok">0.71</div>
+        </div>
+        <div class="readout">
+          <div class="label">Rain, next 72h</div>
+          <div class="value">18mm</div>
+        </div>
+        <div class="readout">
+          <div class="label">Soil nitrogen</div>
+          <div class="value warn">Declining</div>
+        </div>
+      </div>
+      <div class="advisory-box">
+        <div class="label">Recommendation</div>
+        <div class="text">Hold irrigation — rain expected Thursday. Rotate to legume cover crop next cycle to rebuild nitrogen naturally.</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="section" id="pipeline">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Four layers, one recommendation</h2>
+      <p>Each advisory is built from real data, not a generic template. This is the part that took the longest to get right — and it's the part that matters most.</p>
+    </div>
+    <div class="pipeline">
+      <div class="step">
+        <div class="num">1</div>
+        <div><h3>Satellite crop health</h3><p>NDVI and vegetation indices show how a plot is actually performing — not what a farmer assumes from the ground.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div><h3>Soil health records</h3><p>Nutrient levels, moisture, and degradation trends, pulled from soil health card data where available.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div><h3>Weather forecasting</h3><p>Short and medium-range forecasts, so a recommendation accounts for what's coming, not just what's happened.</p></div>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div><h3>Regenerative recommendation engine</h3><p>The three layers combine into one plain-language advisory — rotation, treatment, or timing — plus an optional crop disease check from an uploaded photo.</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="audiences">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Built for two readers</h2>
+      <p>The same underlying data serves a farmer deciding what to do this week, and a policymaker deciding where to direct resources this season.</p>
+    </div>
+    <div class="audiences">
+      <div class="audience">
+        <div class="tag">Field level</div>
+        <h3>Farmer advisory</h3>
+        <p>A simple, local-language view of what's happening on their land and what to do next.</p>
+        <ul>
+          <li>Plain-language recommendations, not raw data</li>
+          <li>Regional language support</li>
+          <li>Optional crop disease check by photo</li>
+        </ul>
+      </div>
+      <div class="audience">
+        <div class="tag">District level</div>
+        <h3>Policy dashboard</h3>
+        <p>Aggregated soil and crop health trends across a region — where degradation is spreading, where yields are dropping.</p>
+        <ul>
+          <li>District and block-level health maps</li>
+          <li>Early warning on soil degradation trends</li>
+          <li>Shared data schema — other states or nations can plug in</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="compare">
+  <div class="wrap">
+    <div class="section-head">
+      <h2>Not another disease-ID app</h2>
+      <p>Photo-based crop disease detection already exists, and it's not the point. Here's the actual difference.</p>
+    </div>
+    <div class="compare">
+      <div class="them">
+        <h4>What a disease-ID app does</h4>
+        <p>Takes a photo, names a disease. Stops there.</p>
+        <p>No soil, weather, or regional context.</p>
+        <p>Nothing for a district office to act on.</p>
+      </div>
+      <div class="us">
+        <h4>What AgriWis does</h4>
+        <p>Combines satellite, soil, and weather into one recommendation — disease check is one feature inside it, not the whole product.</p>
+        <p>Produces district-level trends a policymaker can actually use.</p>
+        <p>Shares its data schema, so it works as shared infrastructure, not a single app.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="closing">
+    <h2>A field's story, told in one recommendation.</h2>
+    <p>AgriWis is built to be small enough for one farmer to use this week, and open enough for a state to build on next year.</p>
+  </div>
+  <footer>
+    <div>AgriWis — concept, 2026</div>
+    <div>Built for Track 4 · AgriN & Regenerative Agricultural Intelligence</div>
+  </footer>
+</div>
+
+</body>
+</html>

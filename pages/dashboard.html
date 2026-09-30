@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriWis — Farmer Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EAD4; --ink:#23301C; --ink-soft:#4A5640;
+    --gold:#B0842A; --sage:#5C6E4E; --teal:#2C5560;
+    --line:rgba(35,48,28,0.14); --card:#FBF8EE;
+    --warn:#B0842A; --ok:#5C6E4E; --crit:#A5473A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;line-height:1.55;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
+  .wrap{max-width:920px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0;}
+  .brand{font-family:'Fraunces',serif;font-size:20px;font-weight:600;}
+  .brand span{color:var(--gold);}
+  nav .page-links{display:flex;gap:22px;font-size:14px;}
+  nav .page-links a{text-decoration:none;color:var(--ink-soft);}
+  nav .page-links a:hover{color:var(--ink);}
+  nav .page-links a.active{color:var(--ink);font-weight:600;}
+  select{font-family:'Work Sans',sans-serif;font-size:14px;padding:6px 10px;border:1px solid var(--line);border-radius:3px;background:var(--card);color:var(--ink);}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px;margin-bottom:24px;}
+  .panel h2{font-size:20px;margin-bottom:16px;}
+  label{display:block;font-size:13px;color:var(--ink-soft);margin-bottom:5px;margin-top:14px;}
+  label:first-of-type{margin-top:0;}
+  input[type=text],input[type=number]{
+    width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:3px;
+    font-family:'Work Sans',sans-serif;font-size:15px;background:#fff;
+  }
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .btn{
+    margin-top:20px;padding:12px 24px;border-radius:3px;border:none;
+    background:var(--ink);color:var(--paper);font-size:15px;font-weight:600;
+    cursor:pointer;
+  }
+  .btn:hover{background:var(--sage);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .readouts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0;}
+  .readout{border:1px solid var(--line);border-radius:4px;padding:12px 14px;background:#fff;}
+  .readout .label{font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .readout .value{font-size:19px;font-family:'Fraunces',serif;font-weight:500;}
+  .readout .value.warn{color:var(--warn);}
+  .readout .value.ok{color:var(--ok);}
+  .readout .value.crit{color:var(--crit);}
+
+  .advisory-box{background:var(--ink);color:var(--paper);border-radius:4px;padding:18px 20px;margin-top:10px;}
+  .advisory-box .label{font-size:12px;color:#C9CFC0;margin-bottom:6px;}
+  .advisory-box .text{font-size:15.5px;}
+
+  .flag{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;}
+  .flag:first-child{border-top:none;}
+  .flag .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .flag .dot.warning{background:var(--warn);}
+  .flag .dot.critical{background:var(--crit);}
+  .flag .dot.watch{background:var(--teal);}
+  .flag .dot.info{background:var(--ink-soft);}
+
+  .confidence{font-size:13px;color:var(--ink-soft);margin-top:14px;}
+
+  .upload-zone{
+    border:2px dashed var(--line);border-radius:6px;padding:30px;text-align:center;
+    cursor:pointer;color:var(--ink-soft);font-size:14px;
+  }
+  .upload-zone:hover{border-color:var(--sage);}
+  .diagnosis-result{margin-top:18px;}
+  .diagnosis-result .disease-name{font-family:'Fraunces',serif;font-size:20px;margin-bottom:8px;}
+  .diagnosis-result .severity-tag{
+    display:inline-block;font-size:12px;padding:3px 10px;border-radius:12px;
+    margin-bottom:12px;
+  }
+  .severity-tag.critical{background:rgba(165,71,58,0.15);color:var(--crit);}
+  .severity-tag.moderate{background:rgba(176,132,42,0.15);color:var(--warn);}
+  .severity-tag.none{background:rgba(92,110,78,0.15);color:var(--ok);}
+
+  .loading{color:var(--ink-soft);font-size:14px;padding:12px 0;}
+  .error-box{background:rgba(165,71,58,0.1);border:1px solid rgba(165,71,58,0.3);color:var(--crit);padding:12px 16px;border-radius:4px;font-size:14px;margin-top:14px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Agri<span>Wis</span></div>
+    <div class="page-links">
+      <a href="/">Home</a>
+      <a href="/dashboard" class="active">Farmer</a>
+      <a href="/policy">Policy</a>
+      <a href="/docs">API</a>
+    </div>
+    <select id="languageSelect">
+      <option value="English">English</option>
+      <option value="Hindi">हिन्दी</option>
+    </select>
+  </nav>
+
+  <!-- ADVISORY PANEL -->
+  <div class="panel">
+    <h2>Get your field advisory</h2>
+    <div class="row">
+      <div>
+        <label for="plotCode">Plot code</label>
+        <input type="text" id="plotCode" value="SEH-14B" placeholder="e.g. SEH-14B">
+      </div>
+      <div></div>
+      <div>
+        <label for="lat">Latitude</label>
+        <input type="number" id="lat" value="23.20" step="0.0001">
+      </div>
+      <div>
+        <label for="lon">Longitude</label>
+        <input type="number" id="lon" value="77.08" step="0.0001">
+      </div>
+    </div>
+    <button class="btn" id="getAdvisoryBtn" onclick="getAdvisory()">Get advisory</button>
+
+    <div id="advisoryLoading" class="loading hidden">Fetching satellite, soil, and weather data…</div>
+    <div id="advisoryError" class="error-box hidden"></div>
+    <div id="advisoryResults" class="hidden">
+      <div class="readouts" id="readouts"></div>
+      <div id="flagsList"></div>
+      <div class="advisory-box">
+        <div class="label">Recommendation</div>
+        <div class="text" id="advisoryText"></div>
+      </div>
+      <div class="confidence" id="confidenceText"></div>
+    </div>
+  </div>
+
+  <!-- DISEASE CHECK PANEL -->
+  <div class="panel">
+    <h2>Check a leaf for disease</h2>
+    <p style="color:var(--ink-soft);font-size:14px;margin:0 0 16px;">
+      Supports potato and tomato currently.
+    </p>
+    <div class="upload-zone" onclick="document.getElementById('imageInput').click()">
+      <span id="uploadLabel">Click to upload a leaf photo</span>
+    </div>
+    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload()">
+
+    <div id="diagnosisLoading" class="loading hidden">Analysing leaf image…</div>
+    <div id="diagnosisError" class="error-box hidden"></div>
+    <div id="diagnosisResult" class="diagnosis-result hidden"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "";
+
+function show(id){ document.getElementById(id).classList.remove('hidden'); }
+function hide(id){ document.getElementById(id).classList.add('hidden'); }
+
+function ndviClass(value){
+  if (value === null || value === undefined) return '';
+  if (value < 0.3) return 'crit';
+  if (value < 0.5) return 'warn';
+  return 'ok';
+}
+
+async function getAdvisory(){
+  const plotCode = document.getElementById('plotCode').value.trim();
+  const lat = document.getElementById('lat').value;
+  const lon = document.getElementById('lon').value;
+  const language = document.getElementById('languageSelect').value;
+
+  if (!plotCode || !lat || !lon){
+    alert('Enter plot code, latitude, and longitude.');
+    return;
+  }
+
+  hide('advisoryResults'); hide('advisoryError'); show('advisoryLoading');
+  document.getElementById('getAdvisoryBtn').disabled = true;
+
+  try {
+    const url = `${API_BASE}/api/advisory?plot_code=${encodeURIComponent(plotCode)}&lat=${lat}&lon=${lon}&language=${encodeURIComponent(language)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    const data = await res.json();
+    renderAdvisory(data);
+  } catch(err){
+    document.getElementById('advisoryError').textContent =
+      `Couldn't reach the AgriWis server. Is it running at ${API_BASE}? (${err.message})`;
+    show('advisoryError');
+  } finally {
+    hide('advisoryLoading');
+    document.getElementById('getAdvisoryBtn').disabled = false;
+  }
+}
+
+function renderAdvisory(data){
+  const raw = data.raw_data;
+  const rec = data.recommendation;
+
+  const readouts = document.getElementById('readouts');
+  readouts.innerHTML = '';
+
+  const items = [
+    { label: 'Soil nitrogen', value: raw.soil.status === 'ok' ? raw.soil.nitrogen_level : '—',
+      cls: raw.soil.nitrogen_level === 'low' ? 'warn' : 'ok' },
+    { label: 'Crop health (NDVI)', value: raw.satellite.status === 'ok' ? raw.satellite.ndvi_mean : '—',
+      cls: ndviClass(raw.satellite.ndvi_mean) },
+    { label: 'Rain, next 72h', value: raw.weather.status === 'ok' ? raw.weather.rain_next_72h_mm + 'mm' : 'unavailable',
+      cls: '' },
+    { label: 'Soil pH', value: raw.soil.status === 'ok' ? raw.soil.ph : '—', cls: '' },
+  ];
+
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'readout';
+    div.innerHTML = `<div class="label">${item.label}</div><div class="value ${item.cls}">${item.value}</div>`;
+    readouts.appendChild(div);
+  });
+
+  const flagsList = document.getElementById('flagsList');
+  flagsList.innerHTML = '';
+  (rec.flags || []).forEach(flag => {
+    const div = document.createElement('div');
+    div.className = 'flag';
+    div.innerHTML = `<span class="dot ${flag.severity}"></span><span>${flag.message}</span>`;
+    flagsList.appendChild(div);
+  });
+
+  document.getElementById('advisoryText').textContent = data.advisory_text;
+  document.getElementById('confidenceText').textContent =
+    `Confidence: ${rec.confidence} — based on ${Object.entries(rec.based_on).map(([k,v]) => `${k}: ${v}`).join(', ')}`;
+
+  show('advisoryResults');
+}
+
+async function handleImageUpload(){
+  const fileInput = document.getElementById('imageInput');
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  document.getElementById('uploadLabel').textContent = file.name;
+  hide('diagnosisResult'); hide('diagnosisError'); show('diagnosisLoading');
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await fetch(`${API_BASE}/api/diagnose`, { method: 'POST', body: formData });
+    const data = await res.json();
+    renderDiagnosis(data);
+  } catch(err){
+    document.getElementById('diagnosisError').textContent =
+      `Couldn't reach the AgriWis server. (${err.message})`;
+    show('diagnosisError');
+  } finally {
+    hide('diagnosisLoading');
+  }
+}
+
+function renderDiagnosis(data){
+  const box = document.getElementById('diagnosisResult');
+
+  if (data.status === 'model_not_loaded'){
+    box.innerHTML = `<div class="error-box" style="background:rgba(176,132,42,0.1);border-color:rgba(176,132,42,0.3);color:var(--warn);">
+      Disease model isn't trained yet. ${data.message}
+    </div>`;
+    show('diagnosisResult');
+    return;
+  }
+  if (data.status === 'unsupported'){
+    box.innerHTML = `<p style="color:var(--ink-soft);">${data.treatment}</p>`;
+    show('diagnosisResult');
+    return;
+  }
+  if (data.status !== 'ok'){
+    box.innerHTML = `<div class="error-box">${data.message || 'Could not analyse image.'}</div>`;
+    show('diagnosisResult');
+    return;
+  }
+
+  const severityClass = data.severity === 'critical' ? 'critical' : (data.severity === 'none' ? 'none' : 'moderate');
+  box.innerHTML = `
+    <div class="disease-name">${data.disease}</div>
+    <span class="severity-tag ${severityClass}">${data.severity}</span>
+    <p>${data.treatment}</p>
+    <p style="font-size:13px;color:var(--ink-soft);">Confidence: ${(data.confidence*100).toFixed(0)}%</p>
+    ${data.low_confidence_warning ? `<p style="font-size:13px;color:var(--warn);">${data.low_confidence_warning}</p>` : ''}
+  `;
+  show('diagnosisResult');
+}
+</script>
+
+</body>
+</html>

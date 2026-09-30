@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriWis — Policy Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EAD4; --ink:#23301C; --ink-soft:#4A5640;
+    --gold:#B0842A; --sage:#5C6E4E; --teal:#2C5560;
+    --line:rgba(35,48,28,0.14); --card:#FBF8EE; --crit:#A5473A;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;line-height:1.55;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
+  nav{display:flex;align-items:center;justify-content:space-between;padding:24px 0;}
+  .page-links{display:flex;gap:22px;font-size:14px;}
+  .page-links a{text-decoration:none;color:var(--ink-soft);}
+  .page-links a:hover{color:var(--ink);}
+  .page-links a.active{color:var(--ink);font-weight:600;}
+  .brand{font-family:'Fraunces',serif;font-size:20px;font-weight:600;}
+  .brand span{color:var(--gold);}
+  .subtitle{font-size:14px;color:var(--ink-soft);}
+
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+  @media (max-width:760px){.kpi-row{grid-template-columns:1fr 1fr;}}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px;}
+  .kpi .label{font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;}
+  .kpi .value{font-size:28px;font-family:'Fraunces',serif;font-weight:500;}
+  .kpi .value.crit{color:var(--crit);}
+  .kpi .value.warn{color:var(--gold);}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:26px;margin-bottom:24px;}
+  .panel h2{font-size:19px;margin-bottom:16px;}
+
+  table{width:100%;border-collapse:collapse;font-size:14px;}
+  th{text-align:left;font-weight:600;color:var(--ink-soft);font-size:12.5px;padding:8px 10px;border-bottom:1px solid var(--line);}
+  td{padding:10px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:12px;}
+  .badge.low{background:rgba(176,132,42,0.15);color:var(--gold);}
+  .badge.medium{background:rgba(92,110,78,0.12);color:var(--sage);}
+  .badge.high{background:rgba(92,110,78,0.2);color:var(--sage);}
+
+  .critical-item{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line);}
+  .critical-item:first-child{border-top:none;}
+  .critical-item .dot{width:8px;height:8px;border-radius:50%;background:var(--crit);margin-top:6px;flex-shrink:0;}
+  .critical-item .plot{font-weight:600;font-size:14px;}
+  .critical-item .msg{font-size:13.5px;color:var(--ink-soft);}
+  .empty-state{color:var(--ink-soft);font-size:14px;padding:8px 0;}
+
+  .loading{color:var(--ink-soft);font-size:14px;padding:40px 0;text-align:center;}
+  .error-box{background:rgba(165,71,58,0.1);border:1px solid rgba(165,71,58,0.3);color:var(--crit);padding:14px 18px;border-radius:4px;font-size:14px;}
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div>
+      <div class="brand">Agri<span>Wis</span></div>
+      <div class="subtitle">Sehore District — Policy View</div>
+    </div>
+    <div class="page-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Farmer</a>
+      <a href="/policy" class="active">Policy</a>
+      <a href="/docs">API</a>
+    </div>
+  </nav>
+
+  <div id="loading" class="loading">Loading district data across all registered plots…</div>
+  <div id="errorBox" class="error-box hidden"></div>
+
+  <div id="content" class="hidden">
+    <div class="kpi-row">
+      <div class="kpi">
+        <div class="label">Plots monitored</div>
+        <div class="value" id="kpiTotalPlots">—</div>
+      </div>
+      <div class="kpi">
+        <div class="label">District avg. NDVI</div>
+        <div class="value" id="kpiAvgNdvi">—</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Plots with low nitrogen</div>
+        <div class="value warn" id="kpiLowNitrogen">—</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Critical alerts</div>
+        <div class="value crit" id="kpiCritical">—</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Critical alerts</h2>
+      <div id="criticalList"></div>
+    </div>
+
+    <div class="panel">
+      <h2>By block</h2>
+      <table>
+        <thead><tr><th>Block</th><th>Plots</th><th>Avg. NDVI</th><th>Low nitrogen plots</th></tr></thead>
+        <tbody id="blockTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>All plots</h2>
+      <table>
+        <thead><tr><th>Plot</th><th>Block</th><th>NDVI</th><th>Nitrogen</th><th>Confidence</th></tr></thead>
+        <tbody id="plotsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = "";
+
+async function loadDistrictData(){
+  try {
+    const res = await fetch(`${API_BASE}/api/district-summary`);
+    if (!res.ok) throw new Error(`Server returned ${res.status}`);
+    const data = await res.json();
+    render(data);
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('content').classList.remove('hidden');
+  } catch(err){
+    document.getElementById('loading').classList.add('hidden');
+    const box = document.getElementById('errorBox');
+    box.textContent = `Couldn't reach the AgriWis server at ${API_BASE}. Is app.py running? (${err.message})`;
+    box.classList.remove('hidden');
+  }
+}
+
+function render(data){
+  document.getElementById('kpiTotalPlots').textContent = data.total_plots;
+  document.getElementById('kpiAvgNdvi').textContent = data.avg_ndvi !== null ? data.avg_ndvi : '—';
+  document.getElementById('kpiLowNitrogen').textContent = data.low_nitrogen_count;
+  document.getElementById('kpiCritical').textContent = data.critical_flags.length;
+
+  const criticalList = document.getElementById('criticalList');
+  if (data.critical_flags.length === 0){
+    criticalList.innerHTML = '<div class="empty-state">No critical alerts right now.</div>';
+  } else {
+    criticalList.innerHTML = data.critical_flags.map(c => `
+      <div class="critical-item">
+        <span class="dot"></span>
+        <div>
+          <div class="plot">${c.plot_code} — ${c.block}</div>
+          <div class="msg">${c.flag.message}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  const blockBody = document.getElementById('blockTableBody');
+  blockBody.innerHTML = data.block_summary.map(b => `
+    <tr>
+      <td>${b.block}</td>
+      <td>${b.plot_count}</td>
+      <td>${b.avg_ndvi !== null ? b.avg_ndvi : '—'}</td>
+      <td>${b.low_nitrogen_plots}</td>
+    </tr>
+  `).join('');
+
+  const plotsBody = document.getElementById('plotsTableBody');
+  plotsBody.innerHTML = data.plots.map(p => `
+    <tr>
+      <td>${p.plot_code}</td>
+      <td>${p.block}</td>
+      <td>${p.ndvi !== null ? p.ndvi : '—'}</td>
+      <td>${p.nitrogen_level ? `<span class="badge low">${p.nitrogen_level}</span>` : '—'}</td>
+      <td><span class="badge ${p.confidence}">${p.confidence}</span></td>
+    </tr>
+  `).join('');
+}
+
+loadDistrictData();
+</script>
+
+</body>
+</html>

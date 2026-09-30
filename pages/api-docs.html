@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriWis — Open Data API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F1EAD4; --ink:#23301C; --ink-soft:#4A5640;
+    --gold:#B0842A; --sage:#5C6E4E; --teal:#2C5560;
+    --line:rgba(35,48,28,0.14); --card:#FBF8EE;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Work Sans',sans-serif;line-height:1.6;}
+  h1,h2,h3{font-family:'Fraunces',serif;font-weight:500;margin:0;}
+  code,pre{font-family:'IBM Plex Mono',monospace;}
+  .wrap{max-width:820px;margin:0 auto;padding:0 24px;}
+  nav{padding:28px 0;display:flex;align-items:center;justify-content:space-between;}
+  .page-links{display:flex;gap:22px;font-size:14px;}
+  .page-links a{text-decoration:none;color:var(--ink-soft);}
+  .page-links a:hover{color:var(--ink);}
+  .page-links a.active{color:var(--ink);font-weight:600;}
+  .brand{font-family:'Fraunces',serif;font-size:20px;font-weight:600;}
+  .brand span{color:var(--gold);}
+
+  .intro{padding:20px 0 48px;border-bottom:1px solid var(--line);}
+  .intro h1{font-size:34px;max-width:14ch;margin-bottom:14px;}
+  .intro p{font-size:16.5px;color:var(--ink-soft);max-width:56ch;}
+
+  .endpoint{padding:36px 0;border-bottom:1px solid var(--line);}
+  .endpoint:last-child{border-bottom:none;}
+  .method-path{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .method{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;padding:3px 9px;border-radius:3px;}
+  .method.get{background:rgba(44,85,96,0.15);color:var(--teal);}
+  .method.post{background:rgba(176,132,42,0.15);color:var(--gold);}
+  .path{font-family:'IBM Plex Mono',monospace;font-size:15px;}
+  .endpoint p.desc{color:var(--ink-soft);font-size:15px;margin:10px 0 16px;max-width:60ch;}
+
+  .params-table{width:100%;border-collapse:collapse;margin-bottom:16px;}
+  .params-table th{text-align:left;font-size:12px;color:var(--ink-soft);font-weight:600;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);}
+  .params-table td{padding:8px 10px 8px 0;font-size:14px;border-bottom:1px solid var(--line);}
+  .params-table td:first-child{font-family:'IBM Plex Mono',monospace;}
+
+  pre{background:var(--ink);color:var(--paper);padding:16px 18px;border-radius:4px;font-size:13px;overflow-x:auto;}
+
+  .note{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:24px;margin-top:8px;}
+  .note h3{font-size:16px;margin-bottom:10px;}
+  .note p{font-size:14.5px;color:var(--ink-soft);}
+
+  footer{padding:40px 0;font-size:13px;color:var(--ink-soft);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand">Agri<span>Wis</span> · API</div>
+    <div class="page-links">
+      <a href="/">Home</a>
+      <a href="/dashboard">Farmer</a>
+      <a href="/policy">Policy</a>
+      <a href="/docs" class="active">API</a>
+    </div>
+  </nav>
+
+  <div class="intro">
+    <h1>An open data layer, not a closed app.</h1>
+    <p>AgriWis exposes its advisory data as a shared schema. Any district, state, or partner nation running the same pipeline against their own soil registry and satellite provider can plug in without touching this contract — that's what makes this infrastructure rather than a single product.</p>
+  </div>
+
+  <div class="endpoint">
+    <div class="method-path"><span class="method get">GET</span><span class="path">/api/plot-data</span></div>
+    <p class="desc">Raw satellite (NDVI), soil, and weather data for a single plot.</p>
+    <table class="params-table">
+      <tr><th>Param</th><th>Type</th></tr>
+      <tr><td>plot_code</td><td>string</td></tr>
+      <tr><td>lat</td><td>float</td></tr>
+      <tr><td>lon</td><td>float</td></tr>
+    </table>
+    <pre>GET /api/plot-data?plot_code=SEH-14B&lat=23.20&lon=77.08</pre>
+  </div>
+
+  <div class="endpoint">
+    <div class="method-path"><span class="method get">GET</span><span class="path">/api/advisory</span></div>
+    <p class="desc">Runs plot data through the rules engine and returns a structured recommendation plus a plain-language advisory.</p>
+    <table class="params-table">
+      <tr><th>Param</th><th>Type</th></tr>
+      <tr><td>plot_code</td><td>string</td></tr>
+      <tr><td>lat</td><td>float</td></tr>
+      <tr><td>lon</td><td>float</td></tr>
+      <tr><td>language</td><td>string, optional (default English)</td></tr>
+    </table>
+    <pre>GET /api/advisory?plot_code=SEH-14B&lat=23.20&lon=77.08&language=Hindi</pre>
+  </div>
+
+  <div class="endpoint">
+    <div class="method-path"><span class="method get">GET</span><span class="path">/api/district-summary</span></div>
+    <p class="desc">Aggregates every registered plot into block-level trends and critical alerts — the view built for a policy office, not a single farmer.</p>
+    <pre>GET /api/district-summary</pre>
+  </div>
+
+  <div class="endpoint">
+    <div class="method-path"><span class="method post">POST</span><span class="path">/api/diagnose</span></div>
+    <p class="desc">Upload a leaf photo, get back a disease classification and treatment. Currently trained on potato and tomato.</p>
+    <table class="params-table">
+      <tr><th>Param</th><th>Type</th></tr>
+      <tr><td>image</td><td>multipart file upload</td></tr>
+    </table>
+    <pre>POST /api/diagnose
+Content-Type: multipart/form-data
+image: leaf_photo.jpg</pre>
+  </div>
+
+  <div class="note">
+    <h3>Why this matters beyond one app</h3>
+    <p>A single well-built farmer app helps one region. A shared schema lets a neighbouring district — or another BRICS nation building its own agri-advisory system — plug their own soil and satellite sources into the same contract, without rebuilding the recommendation logic from scratch. That reuse is the actual "digital public good" this track asks for.</p>
+  </div>
+
+  <footer>Full machine-readable schema at <code>/api/schema</code></footer>
+</div>
+
+</body>
+</html>
